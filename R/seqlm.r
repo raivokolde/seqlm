@@ -87,10 +87,6 @@ row_fit = function(mat, fit_par, k, return_model = FALSE){
 	y = row_subsets(mat, k)
 	
 	if(return_model){
-		# temp = cbind(y = y, fit_par$annotation)
-		# fit = tryCatch({
-			# lme(formula(fit_par$model), random = ~ 1|individual, data = temp)
-		# }, error = function(x){return(NULL)})
 		fit = lm(formula(fit_par$model))
 		return(fit)
 	}
@@ -168,10 +164,6 @@ seqlm.contrasts = function(seqlmresults){
 
 	segments = seqlmresults$segments
 
-	if(nrow(segments) == 0){
-		return(NULL)
-	}
-
 	model = seqlmresults$description_length_par$model
 	annotation = seqlmresults$description_length_par$annotation
 	values = seqlmresults$data$values
@@ -203,7 +195,18 @@ seqlm.contrasts = function(seqlmresults){
 		res
 	}
 	
-	output = calc.lm(m)
+	lm.res = calc.lm(m)
+	
+	additionalAnnotation = elementMetadata(seqlmresults$data$genome_information)
+	if(ncol(additionalAnnotation) == 0){
+		segments@elementMetadata = DataFrame(segments@elementMetadata, lm.res)
+		output = segments[order(abs(segments$tstat), decreasing=TRUE), ]
+	}
+	else{
+		contr.ann = additional_annotation(segments$startIndex, segments$endIndex, additionalAnnotation)
+		segments@elementMetadata = DataFrame(segments@elementMetadata, lm.res, contr.ann)
+		output = segments[order(abs(segments$tstat), decreasing=TRUE), ]
+	}
 
 	return(output)
 	

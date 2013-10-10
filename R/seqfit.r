@@ -141,9 +141,8 @@ seqfit = function(values, genome_information, max_dist, max_block_length, descri
 	colnames(res) = c("startIndex", "endIndex")
 	res = as.data.frame(res)
 	res = res[order(res$startIndex), ]
-	segments = cbind("chr" = chr[res$startIndex], "startPos" = pos[res$startIndex], "endPos" = pos[res$endIndex], 
-					 "length" = res$endIndex - res$startIndex + 1, res)
-
+	segments = GRanges(seqnames = chr[res$startIndex], IRanges(start = pos[res$startIndex], end = pos[res$endIndex]))
+	segments@elementMetadata = DataFrame("length" = res$endIndex - res$startIndex + 1, res)
 	
 	# Compile output
 	output = list(
