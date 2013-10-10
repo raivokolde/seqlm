@@ -162,7 +162,7 @@ description_length_lm = function(values, maxlength, model, annotation, n0, m0, s
 #' 
 #' @export
 
-seqlm.contrasts = function(seqlmresults, contr){
+seqlm.contrasts = function(seqlmresults){
 	coord = seqlmresults$data$genome_information$pos
 	chr = seqlmresults$data$genome_information$chr
 
@@ -177,13 +177,13 @@ seqlm.contrasts = function(seqlmresults, contr){
 	values = seqlmresults$data$values
 	individual = colnames(values)
 	
-	contr.names = rep(names(contr), sapply(contr, length))
+	# contr.names = rep(names(contr), sapply(contr, length))
 	
 	avg_mat = avg_matrix(values, segments$length)
 	fit_par = row_model_spec(model, annotation, k = 1, individual = individual, lme = FALSE) 
 	m = row_fit(avg_mat, fit_par, 1, return_model = FALSE)
 	
-	calc.lm.t <- function(x){
+	calc.lm <- function(x){
 		Qr <- x$qr
 		p <- x$rank
 		p1 <- 1L:p
@@ -199,11 +199,11 @@ seqlm.contrasts = function(seqlmresults, contr){
 		est <- x$coefficients[2, ]
 		tval <- est/se
 
-		res <- cbind(est = est, se = se, tval = tval, p = 2 * pt(abs(tval), df=rdf, lower.tail=FALSE))
+		res <- cbind(coef = est, se = se, tstat = tval, p.value = 2 * pt(abs(tval), df=rdf, lower.tail=FALSE))
 		res
 	}
 	
-	output = calc.lm.t(m)
+	output = calc.lm(m)
 
 	return(output)
 	
