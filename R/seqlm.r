@@ -166,7 +166,7 @@ seqlm.contrasts = function(seqlmresults, contr){
 	coord = seqlmresults$data$genome_information$pos
 	chr = seqlmresults$data$genome_information$chr
 
-	segments = seqlmresults$segments[seqlmresults$segments$length >= seqlmresults$min_consecutive_sites, ]
+	segments = seqlmresults$segments
 
 	if(nrow(segments) == 0){
 		return(NULL)
@@ -318,7 +318,6 @@ additional_annotation = function(startIndexes, endIndexes, df, variables = names
 #' @param max_block_length_second_stage maximal block length for the second stage of search if two-stage search is used 
 #' for speeding up the analysis. Second stage is initiated only if \code{max_block_length_second_stage} > 
 #' \code{max_block_length}
-#' @param min_consecutive_sites minimal number of consequtive sites that can form a region
 #' @param max_dist maximal genomic distance between the sites to be considered the same region
 #' @return  A list containing the input data, parameters and the segmentation.
 #' 
@@ -347,7 +346,7 @@ additional_annotation = function(startIndexes, endIndexes, df, variables = names
 #' models = c("~ 1", "~ Factor1 + Factor2")
 #' 
 #' # Calculate segmentation
-#' seqlmresults = seqlm(t(mat), genome_information, models, annotation, max_dist=2, min_consecutive_sites=1)
+#' seqlmresults = seqlm(t(mat), genome_information, models, annotation, max_dist=2)
 #' 
 #' # Use contrasts to calculate p-values and effect sizes
 #' contr.res = seqlm.contrasts(seqlmresults, model_nr = 2, contr = list(Factor1 = "A - B = 0", Factor2 = "A - B = 0"))
@@ -361,9 +360,9 @@ additional_annotation = function(startIndexes, endIndexes, df, variables = names
 #' dir = dir)
 #' 
 #' @export
-seqlm = function(values, genome_information, model, annotation, n0 = 1, m0 = 10, sig0 = NA, alpha = 2, max_block_length = 50,  min_consecutive_sites = 3, max_dist = 4000){
+seqlm = function(values, genome_information, model, annotation, n0 = 1, m0 = 10, sig0 = NA, alpha = 2, max_block_length = 50, max_dist = 4000){
 	
-	return (seqfit(values, genome_information, max_dist, min_consecutive_sites, description_length_fun = description_length_lm, max_block_length = max_block_length, description_length_par = list(model = model, annotation = annotation,  n0 = n0, m0 = m0, sig0 = sig0, alpha = alpha)))
+	return (seqfit(values, genome_information, max_dist, description_length_fun = description_length_lm, max_block_length = max_block_length, description_length_par = list(model = model, annotation = annotation,  n0 = n0, m0 = m0, sig0 = sig0, alpha = alpha)))
 }
 ##
 

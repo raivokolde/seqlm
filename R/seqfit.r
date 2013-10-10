@@ -66,7 +66,6 @@ match_positions = function(values, genome_information){
 #' @param genome_information \code{data.frame} giving the genomic coordinates and optionally additional 
 #' description for the sites.
 #' @param max_dist maximal genomic distance between the sites to be considered the same region
-#' @param min_consecutive_sites minimal number of consequtive sites that can form a region
 #' @param max_block_length maximal length for a block 
 #' @param max_block_length_second_stage maximal block length for the second stage of search if two-stage search is used 
 #' for speeding up the analysis. Second stage is initiated only if \code{max_block_length_second_stage} > 
@@ -79,7 +78,7 @@ match_positions = function(values, genome_information){
 #' @author  Kaspar Martens <kmartens@@ut.ee> Raivo Kolde <rkolde@@gmail.com>
 #' 
 #' @export
-seqfit = function(values, genome_information, max_dist, min_consecutive_sites, max_block_length, description_length_fun, description_length_par){
+seqfit = function(values, genome_information, max_dist, max_block_length, description_length_fun, description_length_par){
 	# Center the rows of "values"
 	values = t(scale(t(values), center=TRUE, scale=FALSE))
 	
@@ -104,9 +103,8 @@ seqfit = function(values, genome_information, max_dist, min_consecutive_sites, m
 	lengths = lengths[ord]
 
 	maxlength = max(lengths)
-	# which_pieces = which(lengths >= min_consecutive_sites)
-	if(min_consecutive_sites <= 1) which_pieces1 = which(lengths == 1) else which_pieces1 = NULL
-	which_pieces2 = which(lengths >= max(2, min_consecutive_sites))
+	which_pieces1 = which(lengths == 1)
+	which_pieces2 = which(lengths >= 2)
 	
 	cat("Finding the best segmentation\n")
 	flush.console()
@@ -154,7 +152,6 @@ seqfit = function(values, genome_information, max_dist, min_consecutive_sites, m
 			genome_information = gr
 		),
 		description_length_par = description_length_par,
-		min_consecutive_sites = min_consecutive_sites,
 		segments = segments
 	)
 	
