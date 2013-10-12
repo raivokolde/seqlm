@@ -15,7 +15,8 @@ Imports:
     mvtnorm,
     plyr,
     ggplot2,
-    Matrix
+    Matrix,
+    GenomicRanges
 License: GPL-2
 LazyLoad: yes
 Collate:

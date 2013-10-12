@@ -3,7 +3,7 @@ row_subsets = function(mat, k){
 	n = ncol(mat)
 	m = nrow(mat)
 	
-	if(k = 1){
+	if(k == 1){
 		res = t(mat)
 	}
 	else{
@@ -76,13 +76,13 @@ prior_var = function(values, annotation){
 	return(sig0)
 }
 
-description_length_lm = function(values, maxlength, model, annotation, n0, m0, sig0, alpha, max_block_length){
+description_length_lm = function(values, annotation, maxlength, n0, m0, sig0, alpha, max_block_length){
 	n = ncol(values)
 	m = nrow(values)
 	
 	# Estimate variance
 	if(is.na(sig0)){
-		sig0 = prior_var(values, model, annotation)
+		sig0 = prior_var(values, annotation)
 	}
 	
 	# Adjust the input priors
@@ -145,7 +145,7 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 	values = t(scale(t(values), center=TRUE, scale=FALSE))
 	
 	# Divide the genome into initial segments based on genomic coordinate
-	chr = as.vector(seqnames(genome_information))
+	chr = IRanges::as.vector(seqnames(genome_information))
 	pos = start(genome_information)
 	indicator = group_by_dist(pos, max_dist)
 	pieces = split(seq_along(indicator), indicator)
@@ -160,11 +160,11 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 	which_pieces1 = which(lengths == 1)
 	which_pieces2 = which(lengths >= 2)
 	
-	# Initialize progressbar
-	pb <- txtProgressBar(min = 0, max = length(which_pieces2), style = 3)
-	
 	cat("Finding the best segmentation\n")
 	flush.console()
+	
+	# Initialize progressbar
+	pb <- txtProgressBar(min = 0, max = length(which_pieces2), style = 3)
 	
 	# Segment based on the model
 	maxlength = max(lengths)
@@ -201,8 +201,11 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 	res = do.call("rbind", segmentlist)
 	
 	# Add the pieces with length one
-	index_pieces1 = unlist(pieces[which_pieces1])
-	res = rbind(res, matrix(c(index_pieces1, index_pieces1), ncol=2))
+	if(length(which_pieces1) != 0){
+		index_pieces1 = unlist(pieces[which_pieces1])
+		res = rbind(res, matrix(c(index_pieces1, index_pieces1), ncol=2))
+	}
+	
 	colnames(res) = c("startIndex", "endIndex")
 	res = as.data.frame(res)
 	res = res[order(res$startIndex), ]
@@ -215,7 +218,8 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 	output = list(
 		data = list(
 			values = values,
-			genome_information = genome_information
+			genome_information = genome_information, 
+			annotation = description_length_par$annotation
 		),
 		description_length_par = description_length_par,
 		segments = segments
@@ -235,7 +239,7 @@ avg_matrix = function(mat, lengths){
 	
 	diag = spMatrix(nrow = length(lengths), ncol = sum(lengths), i = rep(1:length(lengths), lengths), j = 1:sum(lengths), x = 1 / rep(lengths, lengths))
 	
-	return(diag %*% mat)
+	return(as.matrix(diag %*% mat))
 }
 
 calculate_t = function(fit){
@@ -264,11 +268,11 @@ seqlm_contrasts = function(seqlmresults){
 	
 	# Calculate p-values
 	avg_mat = avg_matrix(seqlmresults$data$values, segments$length)
-	fit = row_fit(avg_mat, annotation, 1)
+	fit = row_fit(avg_mat, seqlmresults$data$annotation, 1)
 	lm_res = calculate_t(fit)
 	
 	# Add to the results
-	segments@elementMetadata = DataFrame(segments@elementMetadata, lm.res)
+	segments@elementMetadata = DataFrame(segments@elementMetadata, lm_res)
 	
 	return(segments[order(abs(segments$tstat), decreasing=TRUE), ])
 }
@@ -289,8 +293,8 @@ match_positions = function(values, genome_information){
 	values = values[int, ]
 	
 	# Order by genomic coordinates
-	genome_information = genome_information[order(genome_information$chr, genome_information$pos), ]
-	values = values[rownames(genome_information), ]
+	genome_information = genome_information[order(IRanges::as.vector(seqnames(genome_information)), start(genome_information)), ]
+	values = values[names(genome_information), ]
 	
 	return(list(values = values, genome_information = genome_information))
 }
@@ -322,33 +326,52 @@ additional_annotation = function(startIndexes, endIndexes, df, variables = names
 	return(as.data.frame(output))
 }
 
-#' Fit the model
+#' Sequential lm
 #' 
-#' Fit the model
+#' Segments genome based on given linear models and and calculates the significance of regions
 #' 
-#' The \code{genome_information} variable is expected to be a 
-#' \code{data.frame} that gives genomic position and optional extra 
-#' information for every row in the \code{values}. To identify the 
-#' matrix rows then the rownames in the \code{values} and 
-#' \code{genome_information} have to match. The \code{genome_information}
-#'  has to have at least two columns: "chr" for chromosome and "pos" showing 
-#' the coordinate. Additional columns in the \code{genome_information} table
-#'  are used to describe the regions afterwards.    
+#' Implementation details
 #'
 #' @param values a matrix where columns are samples and rows correspond to the sites
-#' @param genome_information \code{data.frame} giving the genomic coordinates and optionally additional 
-#' description for the sites.
+#' @param genome_information \code{\link{GRanges}} object giving the positions 
+#' of the probes, names should correspond to rownames of values. 
+#' \code{elementData} of this object is used to annotate the regions 
+#' @param annotation vector describing the samples. If discrete then has to have 
+#' exactly 2 levels. 
+#' @param n0 prior number of observations to stablilize the variation estimate 
+#' when calculating likelihood
+#' @param m0 prior number of observations to estimate the cost of numeric values
+#'  when calculating description length
+#' @param sig0 prior standard deviation
+#' @param max_block_length maximal length of the block we are searching. This is 
+#' used to speed up computation
 #' @param max_dist maximal genomic distance between the sites to be considered the same region
-#' @param max_block_length maximal length for a block 
-#' @param max_block_length_second_stage maximal block length for the second stage of search if two-stage search is used 
-#' for speeding up the analysis. Second stage is initiated only if \code{max_block_length_second_stage} > 
-#' \code{max_block_length}
-#' @param description_length_fun function for calculating the description length
-#' @param description_length_par additional parameters for \code{description_lengths_fun}
-#' 
 #' @return  A list containing the input data, parameters and the segmentation.
 #' 
 #' @author  Kaspar Martens <kmartens@@ut.ee> Raivo Kolde <rkolde@@gmail.com>
+#' 
+#' @examples
+#' # library(pheatmap)
+#' # Generate data
+#' rmat = function(n, m, mean=0, sd=1){ return(matrix(rnorm(n * m, mean, sd), n, m))}
+#' sd = 0.1
+#' mat = cbind(rmat(10, 3, 0.3, sd),
+#' 	rbind(rmat(3, 5, 0.8, sd), rmat(7, 5, 0.2, sd)),
+#' 	rbind(rmat(5, 8, 0.2, sd), rmat(5, 8, 0.9, sd))
+#' )
+#' colnames(mat) = paste("X", 1:ncol(mat), sep = "")
+#' 
+#' annotation = data.frame(Factor1 = rep(c("A", "B"), c(3, 7)), Factor2 = rep(c("A", "B"), c(5, 5)))
+#' 
+#' # pheatmap(mat, cluster_rows=F, cluster_cols=F)
+#' 
+#' # Generate necessary files for running the algorithm
+#' gi = GRanges(seqnames = rep(1, 16), IRanges(start = 1:16, end = 1:16))
+#' gi@elementMetadata = DataFrame( "name" = sample(letters, 16))
+#' names(gi) = paste("X", 1:ncol(mat), sep = "")
+#' 
+#' seqlm(t(mat), gi, annotation[,1])
+#' seqlm(t(mat), gi, annotation[,2])
 #' 
 #' @export
 seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 = NA, alpha = 2, max_block_length = 50, max_dist = 1000){
@@ -357,7 +380,7 @@ seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 =
 		stop("genome_information has to be a GRanges object")
 	} 
 	
-	if(!is.vector(annotation)){
+	if(!(is.vector(annotation) | is.factor(annotation))){
 		stop("annotation has to be a vector")
 	}
 	
@@ -377,38 +400,26 @@ seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 =
 	values = mp$values
 	genome_information = mp$genome_information
 	
+	# Perform segmentation
+	res = seqlm_segmentation(values = values, genome_information = genome_information, max_dist = max_dist, max_block_length = max_block_length, description_length_par = list(annotation = annotation,  n0 = n0, m0 = m0, sig0 = sig0, alpha = alpha))
+		
+	# Calculate p-values
+	res = seqlm_contrasts(res)
 	
-	return (seqfit(values, genome_information, max_dist, description_length_fun = description_length_lm, max_block_length = max_block_length, description_length_par = list(model = model, annotation = annotation,  n0 = n0, m0 = m0, sig0 = sig0, alpha = alpha)))
+	# Add additional annotation
+	additionalAnnotation = elementMetadata(genome_information)
+
+	if(ncol(additionalAnnotation) != 0){
+		segment_ann = additional_annotation(res$startIndex, res$endIndex, additionalAnnotation)
+		elementMetadata(res) = DataFrame(elementMetadata(res), segment_ann)
+	}
+	
+	return (res)
 }
 
 
 
 
-
-
-
-
-
-
-mp = match_positions(values, genome_information)
-values = mp$values
-genome_information = mp$genome_information
-gr = GRanges(seqnames = genome_information$chr, ranges = IRanges(start = genome_information$pos, width = 1, names = rownames(genome_information)))
-
-
-additionalAnnotation = elementMetadata(seqlmresults$data$genome_information)
-
-if(ncol(additionalAnnotation) == 0){
-	segments@elementMetadata = DataFrame(segments@elementMetadata, lm.res)
-	output = segments[order(abs(segments$tstat), decreasing=TRUE), ]
-}
-else{
-	contr.ann = additional_annotation(segments$startIndex, segments$endIndex, additionalAnnotation)
-	segments@elementMetadata = DataFrame(segments@elementMetadata, lm.res, contr.ann)
-	output = segments[order(abs(segments$tstat), decreasing=TRUE), ]
-}
-
-return(output)
 ##
 
 
