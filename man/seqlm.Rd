@@ -1,0 +1,70 @@
+\docType{package}
+\name{seqlm}
+\alias{seqlm}
+\alias{seqlm-package}
+\title{seqlm}
+\usage{
+  seqlm(values, genome_information, annotation, n0 = 1,
+    m0 = 10, sig0 = NA, alpha = 2, max_block_length = 50,
+    max_dist = 1000)
+}
+\arguments{
+  \item{values}{a matrix where columns are samples and rows
+  correspond to the sites}
+
+  \item{genome_information}{\code{\link{GRanges}} object
+  giving the positions of the probes, names should
+  correspond to rownames of values. \code{elementData} of
+  this object is used to annotate the regions}
+
+  \item{annotation}{vector describing the samples. If
+  discrete then has to have exactly 2 levels.}
+
+  \item{n0}{prior number of observations to stablilize the
+  variation estimate when calculating likelihood}
+
+  \item{m0}{prior number of observations to estimate the
+  cost of numeric values when calculating description
+  length}
+
+  \item{sig0}{prior standard deviation}
+
+  \item{alpha}{multiplier for the cost of parameter in MDL.
+  Bigger alpha values give longer regions.}
+
+  \item{max_block_length}{maximal length of the block we
+  are searching. This is used to speed up computation}
+
+  \item{max_dist}{maximal genomic distance between the
+  sites to be considered the same region}
+}
+\value{
+  A list containing the input data, parameters and the
+  segmentation.
+}
+\description{
+  seqlm
+
+  Segments genome based on given linear models and and
+  calculates the significance of regions
+}
+\details{
+  Implementation details
+}
+\examples{
+data(artificial)
+seqlm(artificial$values, artificial$genome_information, artificial$annotation1)
+
+\dontrun{
+data(tissue_small)
+seqlm(tissue_small$values, tissue_small$genome_information, tissue_small$annotation)
+
+data(tissue)
+seqlm(tissue$values, tissue$genome_information, tissue$annotation)
+}
+}
+\author{
+  Kaspar Martens <kmartens@ut.ee> Raivo Kolde
+  <rkolde@gmail.com>
+}
+

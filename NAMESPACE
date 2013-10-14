@@ -1,0 +1,8 @@
+export(seqlm)
+import(GenomicRanges)
+import(IRanges)
+import(Matrix)
+import(foreach)
+import(ggplot2)
+import(plyr)
+import(reshape)
