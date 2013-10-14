@@ -160,9 +160,6 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 	which_pieces1 = which(lengths == 1)
 	which_pieces2 = which(lengths >= 2)
 	
-	cat("Finding the best segmentation\n")
-	flush.console()
-	
 	# Initialize progressbar
 	pb <- txtProgressBar(min = 0, max = length(which_pieces2), style = 3)
 	
@@ -305,7 +302,6 @@ additional_annotation = function(startIndexes, endIndexes, df, variables = names
 	
 	output = list()
 	
-	cat("Adding annotation to the segments.\n")
 	for (j in 1:length(variables)){
 		variable = variables[j]
 		currentData = df[, variable]
@@ -399,14 +395,19 @@ seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 =
 	genome_information = mp$genome_information
 	
 	# Perform segmentation
+	cat("Finding the best segmentation\n"); flush.console()
+	
 	res = seqlm_segmentation(values = values, genome_information = genome_information, max_dist = max_dist, max_block_length = max_block_length, description_length_par = list(annotation = annotation,  n0 = n0, m0 = m0, sig0 = sig0, alpha = alpha))
 		
 	# Calculate p-values
+	cat("Finding the best segmentation\n"); flush.console()
 	res = seqlm_contrasts(res)
 	
 	# Add additional annotation
+	cat("Calculating p-values\n"); flush.console()
 	additionalAnnotation = elementMetadata(genome_information)
-
+	
+	cat("Adding additional information to the results\n"); flush.console()
 	if(ncol(additionalAnnotation) != 0){
 		segment_ann = additional_annotation(res$startIndex, res$endIndex, additionalAnnotation)
 		elementMetadata(res) = DataFrame(elementMetadata(res), segment_ann)
