@@ -415,10 +415,6 @@ seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 =
 	
 	return (res)
 }
-
-
-
-
 ##
 
 
