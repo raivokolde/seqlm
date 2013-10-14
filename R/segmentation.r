@@ -66,8 +66,8 @@ row_fit = function(mat, annotation, k){
 }
 
 prior_var = function(values, annotation){
-	if(ncol(values) > 100){
-		values = values[sample(1:m, 100), ]
+	if(nrow(values) > 100){
+		values = values[sample(1:nrow(values), 100), ]
 	}
 	
 	f = row_fit(values, annotation, k = 1)
@@ -166,10 +166,12 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 	# Initialize progressbar
 	pb <- txtProgressBar(min = 0, max = length(which_pieces2), style = 3)
 	
+	# Check if parallel available
+	`%op%` <- if (getDoParRegistered()) `%dopar%` else `%do%`
+	
 	# Segment based on the model
 	maxlength = max(lengths)
-	
-	segmentlist = foreach(i = seq_along(which_pieces2), .export=c("description_length_lm", "prior_var", "row_fit", "row_subsets", "row_bics", "vars", "segmentation", "calculate_rss", "number_of_coefs")) %dopar% {
+	segmentlist = foreach(i = seq_along(which_pieces2), .export=c("description_length_lm", "prior_var", "row_fit", "row_subsets", "row_bics", "vars", "segmentation", "calculate_rss", "number_of_coefs")) %op% {
 		# Which rows from the matrix "values" belong to this piece
 		u = pieces[[which_pieces2[i]]]
 		
@@ -231,8 +233,6 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 
 ## Calculate contrasts based on the seqfit output
 avg_matrix = function(mat, lengths){
-	require(Matrix)
-  	
 	if(sum(lengths) != nrow(mat)){
 		stop("Lengths does not sum up to number of rows in mat")
 	}
@@ -300,26 +300,32 @@ match_positions = function(values, genome_information){
 }
 
 additional_annotation = function(startIndexes, endIndexes, df, variables = names(df)){
+	# Check if parallel available
+	`%op%` <- if (getDoParRegistered()) `%dopar%` else `%do%`
+	
 	output = list()
+	
 	cat("Adding annotation to the segments.\n")
 	for (j in 1:length(variables)){
 		variable = variables[j]
 		currentData = df[, variable]
 		cat(sprintf("\tVariable: %s\n", variable))
 		if(is.numeric(currentData)){
-			output[[j]] = foreach(i = 1:length(startIndexes), .combine='c') %dopar% {
+			output[[j]] = foreach(i = 1:length(startIndexes)) %op% {
 				start = startIndexes[i]
 				end = endIndexes[i]
 				sum(currentData[(start):(end)])
 			}
+			output[[j]] = do.call("c", output[[j]] )
 		}
 		else{
-			output[[j]] = foreach(i = 1:length(startIndexes), .combine='c') %dopar% {
+			output[[j]] = foreach(i = 1:length(startIndexes)) %op% {
 				start = startIndexes[i]
 				end = endIndexes[i]
 				temp = unique(unlist(strsplit(paste(currentData[(start):(end)], collapse=";"), ";")))
 				paste(temp[temp!=""], collapse=";")
 			}
+			output[[j]] = do.call("c", output[[j]] )
 		}
 		names(output)[j] = variables[j]
 	}
@@ -343,6 +349,7 @@ additional_annotation = function(startIndexes, endIndexes, df, variables = names
 #' @param m0 prior number of observations to estimate the cost of numeric values
 #'  when calculating description length
 #' @param sig0 prior standard deviation
+#' @param alpha multiplier for the cost of parameter in MDL. Bigger alpha values give longer regions.
 #' @param max_block_length maximal length of the block we are searching. This is 
 #' used to speed up computation
 #' @param max_dist maximal genomic distance between the sites to be considered the same region
@@ -351,28 +358,16 @@ additional_annotation = function(startIndexes, endIndexes, df, variables = names
 #' @author  Kaspar Martens <kmartens@@ut.ee> Raivo Kolde <rkolde@@gmail.com>
 #' 
 #' @examples
-#' # library(pheatmap)
-#' # Generate data
-#' rmat = function(n, m, mean=0, sd=1){ return(matrix(rnorm(n * m, mean, sd), n, m))}
-#' sd = 0.1
-#' mat = cbind(rmat(10, 3, 0.3, sd),
-#' 	rbind(rmat(3, 5, 0.8, sd), rmat(7, 5, 0.2, sd)),
-#' 	rbind(rmat(5, 8, 0.2, sd), rmat(5, 8, 0.9, sd))
-#' )
-#' colnames(mat) = paste("X", 1:ncol(mat), sep = "")
+#' data(artificial)
+#' seqlm(artificial$values, artificial$genome_information, artificial$annotation1)
 #' 
-#' annotation = data.frame(Factor1 = rep(c("A", "B"), c(3, 7)), Factor2 = rep(c("A", "B"), c(5, 5)))
+#' \dontrun{
+#' data(tissue_small)
+#' seqlm(tissue_small$values, tissue_small$genome_information, tissue_small$annotation)
 #' 
-#' # pheatmap(mat, cluster_rows=F, cluster_cols=F)
-#' 
-#' # Generate necessary files for running the algorithm
-#' gi = GRanges(seqnames = rep(1, 16), IRanges(start = 1:16, end = 1:16))
-#' gi@elementMetadata = DataFrame( "name" = sample(letters, 16))
-#' names(gi) = paste("X", 1:ncol(mat), sep = "")
-#' 
-#' seqlm(t(mat), gi, annotation[,1])
-#' seqlm(t(mat), gi, annotation[,2])
-#' 
+#' data(tissue)
+#' seqlm(tissue$values, tissue$genome_information, tissue$annotation)
+#' }
 #' @export
 seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 = NA, alpha = 2, max_block_length = 50, max_dist = 1000){
 	# Check the input
@@ -394,6 +389,9 @@ seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 =
 			stop("If variable annotation is categorical, then it has to have exactly 2 levels")
 		}
 	}
+	
+	# Remove rows that contain NAs
+	values = values[!apply(is.na(values), 1, any),]
 	
 	# Match values and genome_information
 	mp = match_positions(values, genome_information)

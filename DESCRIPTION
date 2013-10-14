@@ -7,19 +7,22 @@ Author: Kaspar Märtens, Raivo Kolde
 Maintainer: Raivo Kolde <rkolde@gmail.com>
 Depends:
     R (>= 2.15.2)
-Description: A method to identify differentially methylated segments from high density chip data. The algorithm works in two stages. First, the probes are segmented into consecutive regions with similar difference between sample groups. Then, the statistical tests are run on top of the identified regions to rank them based on the statistical significance. 
+Description: A method to identify differentially methylated segments from high
+    density chip data. The algorithm works in two stages. First, the probes are
+    segmented into consecutive regions with similar difference between sample
+    groups. Then, the statistical tests are run on top of the identified
+    regions to rank them based on the statistical significance.
 Imports:
     foreach,
     reshape,
-    multcomp,
-    mvtnorm,
     plyr,
     ggplot2,
     Matrix,
-    GenomicRanges
+    GenomicRanges,
+    IRanges
 License: GPL-2
 LazyLoad: yes
 Collate:
     'seqlm-package.r'
-    'seqfit.r'
-    'seqlm.r'
+    'segmentation.r'
+    'datasets.r'
