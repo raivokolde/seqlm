@@ -256,6 +256,7 @@ calculate_t = function(fit){
 	tval = est/se
 
 	res = cbind(coef = est, se = se, tstat = tval, p.value = 2 * pt(abs(tval), df=rdf, lower.tail=FALSE))
+	res = data.frame(res)
 	
 	return(res)
 }
@@ -268,6 +269,10 @@ seqlm_contrasts = function(seqlmresults){
 	fit = row_fit(avg_mat, seqlmresults$data$annotation, 1)
 	lm_res = calculate_t(fit)
 	
+	# Add multile testing p-values
+	lm_res$fdr = p.adjust(lm_res$p.value, method = "fdr")
+	lm_res$bonferroni = p.adjust(lm_res$p.value, method = "bonferroni")
+		
 	# Add to the results
 	segments@elementMetadata = DataFrame(segments@elementMetadata, lm_res)
 	
@@ -360,9 +365,6 @@ additional_annotation = function(startIndexes, endIndexes, df, variables = names
 #' \dontrun{
 #' data(tissue_small)
 #' seqlm(tissue_small$values, tissue_small$genome_information, tissue_small$annotation)
-#' 
-#' data(tissue)
-#' seqlm(tissue$values, tissue$genome_information, tissue$annotation)
 #' }
 #' @export
 seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 = NA, alpha = 2, max_block_length = 50, max_dist = 1000){

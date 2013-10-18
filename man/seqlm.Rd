@@ -58,9 +58,6 @@ seqlm(artificial$values, artificial$genome_information, artificial$annotation1)
 \dontrun{
 data(tissue_small)
 seqlm(tissue_small$values, tissue_small$genome_information, tissue_small$annotation)
-
-data(tissue)
-seqlm(tissue$values, tissue$genome_information, tissue$annotation)
 }
 }
 \author{
