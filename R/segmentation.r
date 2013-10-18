@@ -242,7 +242,7 @@ avg_matrix = function(mat, lengths){
 calculate_t = function(fit){
 	Qr = fit$qr
 	p = fit$rank
-	p1 = 1L:p
+	p1 = p
 	rss = colSums(fit$residuals * fit$residuals)
 
 	n = NROW(Qr$qr)
