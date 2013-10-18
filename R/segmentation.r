@@ -306,6 +306,7 @@ additional_annotation = function(startIndexes, endIndexes, df, variables = names
 	`%op%` <- if (getDoParRegistered()) `%dopar%` else `%do%`
 	
 	output = list()
+	n = length(startIndexes)
 	
 	for (j in 1:length(variables)){
 		variable = variables[j]
@@ -320,13 +321,15 @@ additional_annotation = function(startIndexes, endIndexes, df, variables = names
 			output[[j]] = do.call("c", output[[j]] )
 		}
 		else{
-			output[[j]] = foreach(i = 1:length(startIndexes)) %op% {
+			splitted = strsplit(as.character(currentData), ";")
+			res = rep(NA, n)
+			for(i in 1:n){
 				start = startIndexes[i]
 				end = endIndexes[i]
-				temp = unique(unlist(strsplit(paste(currentData[(start):(end)], collapse=";"), ";")))
-				paste(temp[temp!=""], collapse=";")
-			}
-			output[[j]] = do.call("c", output[[j]] )
+				temp = unique(unlist(splitted[(start):(end)]))
+				res[i] = paste(temp[temp!=""], collapse=";")
+			} 
+			output[[j]] = res
 		}
 		names(output)[j] = variables[j]
 	}
