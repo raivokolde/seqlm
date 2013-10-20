@@ -276,7 +276,7 @@ seqlm_contrasts = function(seqlmresults){
 	# Add to the results
 	segments@elementMetadata = DataFrame(segments@elementMetadata, lm_res)
 	
-	return(segments[order(abs(segments$tstat), decreasing=TRUE), ])
+	return(segments)
 }
 ##
 
@@ -301,39 +301,35 @@ match_positions = function(values, genome_information){
 	return(list(values = values, genome_information = genome_information))
 }
 
-additional_annotation = function(startIndexes, endIndexes, df, variables = names(df)){
-	# Check if parallel available
-	`%op%` <- if (getDoParRegistered()) `%dopar%` else `%do%`
+additional_annotation = function(res, df){
+
+	which_numeric = which(sapply(df, is.numeric))
+	which_char = setdiff(1:ncol(df), which_numeric)
+	
+	cat("\tAll numeric variables\n")
+	numeric_cols = as.matrix(df[, which_numeric, drop=FALSE])
+	output_numeric = avg_matrix(numeric_cols, res$length)
 	
 	output = list()
+	startIndexes = res$startIndex
+	endIndexes = res$endIndex
 	n = length(startIndexes)
-	
-	for (j in 1:length(variables)){
-		variable = variables[j]
-		currentData = df[, variable]
-		cat(sprintf("\tVariable: %s\n", variable))
-		if(is.numeric(currentData)){
-			output[[j]] = foreach(i = 1:length(startIndexes)) %op% {
-				start = startIndexes[i]
-				end = endIndexes[i]
-				sum(currentData[(start):(end)])
-			}
-			output[[j]] = do.call("c", output[[j]] )
+	for (j in which_char){
+		currentData = df[, j]
+		cat(sprintf("\tVariable: %s\n", names(df)[j]))
+		splitted = strsplit(as.character(currentData), ";")
+		res = rep(NA, n)
+		for(i in 1:n){
+			start = startIndexes[i]
+			end = endIndexes[i]
+			temp = unique(unlist(splitted[start:end]))
+			res[i] = paste(temp[temp!=""], collapse=";")
 		}
-		else{
-			splitted = strsplit(as.character(currentData), ";")
-			res = rep(NA, n)
-			for(i in 1:n){
-				start = startIndexes[i]
-				end = endIndexes[i]
-				temp = unique(unlist(splitted[(start):(end)]))
-				res[i] = paste(temp[temp!=""], collapse=";")
-			} 
-			output[[j]] = res
-		}
-		names(output)[j] = variables[j]
+		output[[j]] = res
 	}
-	return(as.data.frame(output))
+	out = cbind(as.data.frame(output), output_numeric)
+	names(out) = names(df)[c(which_char, which_numeric)]
+	return(out)
 }
 
 #' Sequential lm
@@ -405,20 +401,19 @@ seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 =
 	res = seqlm_segmentation(values = values, genome_information = genome_information, max_dist = max_dist, max_block_length = max_block_length, description_length_par = list(annotation = annotation,  n0 = n0, m0 = m0, sig0 = sig0, alpha = alpha))
 		
 	# Calculate p-values
-	cat("Finding the best segmentation\n"); flush.console()
+	cat("Calculating coefficients and p-values for all regions\n"); flush.console()
 	res = seqlm_contrasts(res)
 	
 	# Add additional annotation
-	cat("Calculating p-values\n"); flush.console()
 	additionalAnnotation = elementMetadata(genome_information)
 	
 	cat("Adding additional information to the results\n"); flush.console()
 	if(ncol(additionalAnnotation) != 0){
-		segment_ann = additional_annotation(res$startIndex, res$endIndex, additionalAnnotation)
+		segment_ann = additional_annotation(res, additionalAnnotation)
 		elementMetadata(res) = DataFrame(elementMetadata(res), segment_ann)
 	}
 	
-	return (res)
+	return (res[order(abs(res$tstat), decreasing=TRUE)])
 }
 ##
 
