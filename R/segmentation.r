@@ -306,31 +306,54 @@ additional_annotation = function(res, df){
 	which_numeric = which(sapply(df, is.numeric))
 	which_char = setdiff(1:ncol(df), which_numeric)
 	
+	output_numeric = NULL
+	
 	cat("\tAll numeric variables\n")
-	numeric_cols = as.matrix(df[, which_numeric, drop=FALSE])
-	output_numeric = avg_matrix(numeric_cols, res$length)
+	if(length(which_numeric) > 0){
+		numeric_cols = as.matrix(df[, which_numeric, drop=FALSE])
+		output_numeric = avg_matrix(numeric_cols, res$length)
+		output_numeric = as.list(as.data.frame(output_numeric))
+	}
+	else{
+		output_numeric = list()
+	}
 	
 	output = list()
 	startIndexes = res$startIndex
 	endIndexes = res$endIndex
 	n = length(startIndexes)
+	nn = length(res$length > 1) 
+	
 	for (j in which_char){
 		currentData = df[, j]
 		cat(sprintf("\tVariable: %s\n", names(df)[j]))
+		
 		splitted = strsplit(as.character(currentData), ";")
-		res = rep(NA, n)
-		for(i in 1:n){
+		
+		result = rep(NA, n)
+		split_lengths = unlist(lapply(splitted, length))
+		
+		# Case where the length is one and there is only one element that is splitted
+		result[res$length == 1 & split_lengths[startIndexes] == 1] = unlist(splitted[startIndexes[res$length == 1 & split_lengths[startIndexes] == 1]])
+		
+		# Case where length is 1 but several elements are splitted
+		result[res$length == 1 & split_lengths[startIndexes] != 1] = unlist(lapply(splitted[startIndexes[res$length == 1 & split_lengths[startIndexes] != 1]], function(x) paste0(unique(x), collapse = ";")))
+		
+		# Case where length is > 1
+		for(i in which(res$length != 1)){
 			start = startIndexes[i]
 			end = endIndexes[i]
-			temp = unique(unlist(splitted[start:end]))
-			res[i] = paste(temp[temp!=""], collapse=";")
+			temp = unique(unlist(splitted[start:end], use.names = F))
+			result[i] = paste0(temp[temp!=""], collapse=";")
 		}
-		output[[j]] = res
+		output[[j]] = result
 	}
-	out = cbind(as.data.frame(output), output_numeric)
+	out = as.data.frame(c(output, output_numeric))
 	names(out) = names(df)[c(which_char, which_numeric)]
 	return(out)
 }
+
+
 
 #' Sequential lm
 #' 
