@@ -161,7 +161,8 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 	which_pieces2 = which(lengths >= 2)
 	
 	# Initialize progressbar
-	pb <- txtProgressBar(min = 0, max = length(which_pieces2), style = 3)
+	maxProgressBar = max(1, length(which_pieces2))
+	pb <- txtProgressBar(min = 0, max = maxProgressBar, style = 3)
 	
 	# Check if parallel available
 	`%op%` <- if (getDoParRegistered()) `%dopar%` else `%do%`
@@ -193,7 +194,7 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 	}
 	
 	# Finish progressbar 
-	setTxtProgressBar(pb, length(which_pieces2))
+	setTxtProgressBar(pb, maxProgressBar)
 	close(pb)
 	
 	# Combine foreach results
@@ -430,8 +431,8 @@ seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 =
 	# Add additional annotation
 	additionalAnnotation = elementMetadata(genome_information)
 	
-	cat("Adding additional information to the results\n"); flush.console()
 	if(ncol(additionalAnnotation) != 0){
+		cat("Adding additional information to the results\n"); flush.console()
 		segment_ann = additional_annotation(res, additionalAnnotation)
 		elementMetadata(res) = DataFrame(elementMetadata(res), segment_ann)
 	}
