@@ -256,7 +256,7 @@ calculate_t = function(fit){
 	est = fit$coefficients[2, ]
 	tval = est/se
 
-	res = cbind(coef = est, se = se, tstat = tval, p.value = 2 * pt(abs(tval), df=rdf, lower.tail=FALSE))
+	res = cbind(coef = est, se = se, tstat = tval, p.value = ifelse(is.na(tval), 1, 2 * pt(abs(tval), df=rdf, lower.tail=FALSE)))
 	res = data.frame(res)
 	
 	return(res)
