@@ -140,6 +140,14 @@ group_by_dist = function(pos, max_dist_cpg){
 	return (indicator)
 }
 
+# Return the number of segmentations
+number_of_segmentations = function(lengths, max_block_length){
+	if(length(lengths) == 0) return(1)
+	
+	out = ifelse(lengths <= max_block_length, lengths * (lengths + 1) / 2, max_block_length * (max_block_length + 1) / 2 + max_block_length * (lengths - max_block_length))
+	return(out)
+}
+
 seqlm_segmentation = function(values, genome_information, max_dist, max_block_length, description_length_par){
 	# Center the rows of "values"
 	values = t(scale(t(values), center=TRUE, scale=FALSE))
@@ -160,8 +168,11 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 	which_pieces1 = which(lengths == 1)
 	which_pieces2 = which(lengths >= 2)
 	
+	# Find cumulative progress for progressbar
+	cumprogress = cumsum(number_of_segmentations(lengths[which_pieces2], max_block_length))
+	maxProgressBar = cumprogress[length(cumprogress)]
+
 	# Initialize progressbar
-	maxProgressBar = max(1, length(which_pieces2))
 	pb <- txtProgressBar(min = 0, max = maxProgressBar, style = 3)
 	
 	# Check if parallel available
@@ -186,7 +197,7 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 		
 		# Advance progressbar
 		if (i%%100==0){
-			setTxtProgressBar(pb, i)
+			setTxtProgressBar(pb, cumprogress[i])
 		}
 		
 		# In the first column there are "startIndexes", in the second column "endIndexes"
