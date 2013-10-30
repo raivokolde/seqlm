@@ -16,7 +16,6 @@ row_subsets = function(mat, k){
 	return(res)
 }
 
-#TODO: Mis valem see on?
 vars = function(rss, n, df, n0, sig0){
 	s = ((n0 * sig0 + n * rss / df) / (n0 + n))
 	v = n0 + n
