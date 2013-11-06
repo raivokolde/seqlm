@@ -37,11 +37,26 @@ library(seqlm)
 
 Usage
 -----
-For running the code one has to have three objects:
+For running the algorithm one has to have three objects:
 
-* matrix with methylation values;
-* vector specifying the classes of columns (only two-class case is supported currently);
-* location information about the methylation probes in GRanges format (example can be downloaded from [here](http://biit.cs.ut.ee/~kolde/seqlm/genome_information.RData)). 
+* a matrix with methylation values;
+* a vector specifying the classes of columns (only two-class case is supported currently);
+* location information about the methylation probes in GRanges format (a file for Illumina 450K platform can be downloaded from [here](http://biit.cs.ut.ee/~kolde/seqlm/genome_information.RData)). 
+
+An example dataset `tissue_small` is included in the package. It contains data comparing adipose tissue and brainstem, from chromosomes 17 and 18. Finding regions in this data can be accomplished using commands:
+
+```s
+data(tissue_small)
+seqlm(values = tissue_small$values, genome_information = tissue_small$genome_information, annotation =  tissue_small$annotation)
+```
+
+The result of the analysis is a GRanges object containing the locations of the regions and associated statistics. 
+
+The analysis can be time consuming, if the whole genome is analysed at once. If the computer has multicore capabilities it is easy to parallelize the calculations. We use the [foreach](http://cran.r-project.org/web/packages/foreach/index.html) framework by Revolution Computing for parallelization. To enable the parallelization one has to register the 
+
+
+
+
 
 
 
