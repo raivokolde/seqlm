@@ -52,7 +52,13 @@ seqlm(values = tissue_small$values, genome_information = tissue_small$genome_inf
 
 The result of the analysis is a GRanges object containing the locations of the regions and associated statistics. 
 
-The analysis can be time consuming, if the whole genome is analysed at once. If the computer has multicore capabilities it is easy to parallelize the calculations. We use the [foreach](http://cran.r-project.org/web/packages/foreach/index.html) framework by Revolution Computing for parallelization. To enable the parallelization one has to register the 
+The analysis can be time consuming, if the whole genome is analysed at once. If the computer has multicore capabilities it is easy to parallelize the calculations. We use the [foreach](http://cran.r-project.org/web/packages/foreach/index.html) framework by Revolution Computing for parallelization. To enable the parallelization one has to register the parallel backend before and this will be used by seqlm. Ideally, the next commands should take roughly half the time compared to the previous.
+
+```s
+library(doParallel)
+registerDoParallel(cores = 2)
+seqlm(values = tissue_small$values, genome_information = tissue_small$genome_information, annotation =  tissue_small$annotation)
+```
 
 
 
