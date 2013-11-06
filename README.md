@@ -25,13 +25,23 @@ Installation
 ------------
 The most convenient way to install the package is by using the `devtools` package.
 
-```r
+```s
 library(devtools)
 install_github("seqlm", "raivokolde")
 ```
+To start using the package just load it as any other package.
 
+```s
+library(seqlm)
+```
 
+Usage
+-----
+For running the code one has to have three objects:
 
+* matrix with methylation values;
+* vector specifying the classes of columns (only two-class case is supported currently);
+* location information about the methylation probes in GRanges format (example can be downloaded from [here](http://biit.cs.ut.ee/~kolde/seqlm/genome_information.RData)). 
 
 
 
