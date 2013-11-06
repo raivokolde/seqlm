@@ -1,7 +1,7 @@
-`seqlm`
+seqlm
 =======
 
-A method to identify differentially methylated segments from high density chip, for example Illumina 450K, data. 
+An R package for identification of differentially methylated regions (DMRs) from high density chip, for example Illumina 450K, data. 
 
 Method
 ------
@@ -9,7 +9,7 @@ The seqlm method works in three stages.
 
 **Stage 1:** The genome is divided into smaller pieces based on a genomic distance cutoff. 
 
-**Stage 2:** In each piece probes are segmented into regions that have approximately constant difference between the groups of interest. Example of the segmentation and its process is hon in [schema].
+**Stage 2:** In each piece probes are segmented into regions that have approximately constant difference between the groups of interest. Example of the segmentation and its process is shown in [schema].
 
 * In sliding windows with variable sizes we fit a linear models to the data.
 * For each model we record the description length - the amount of bits needed to describe the data using the model
@@ -21,7 +21,14 @@ The seqlm method works in three stages.
 
 [schema]: https://raw.github.com/raivokolde/seqlm/gh-pages/pics/schema.png "Example of seqlm segmentation"
 
+Installation
+------------
+The most convenient way to install the package is by using the `devtools` package.
 
+```r
+library(devtools)
+install_github("seqlm", "raivokolde")
+```
 
 
 
