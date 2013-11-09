@@ -36,7 +36,7 @@
   \item{dpi}{dots per inch, to calibrate the picture size
   in pixels}
 
-  \item{main}{title for the raport}
+  \item{main}{title for the report}
 }
 \description{
   Generate the HTML report for the seqlm results

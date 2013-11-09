@@ -49,7 +49,13 @@
   calculates the significance of regions
 }
 \details{
-  Implementation details
+  The analysis can be time consuming if the whole genome is
+  analysed at once.  If the computer has multicore
+  capabilities it is easy to parallelize the calculations.
+  We use the \code{\link{foreach}}framework by Revolution
+  Computing for parallelization. To enable the
+  parallelization one has to register the parallel backend
+  before and this will be used by seqlm.
 }
 \examples{
 data(artificial)
@@ -57,7 +63,20 @@ seqlm(artificial$values, artificial$genome_information, artificial$annotation1)
 
 \dontrun{
 data(tissue_small)
-seqlm(tissue_small$values, tissue_small$genome_information, tissue_small$annotation)
+
+# Find regions
+segments = seqlm(tissue_small$values, tissue_small$genome_information, tissue_small$annotation)
+
+# The calculation can be parallelized by registering a parallel processing backend
+library(doParallel)
+registerDoParallel(cores = 2)
+segments = seqlm(values = tissue_small$values, genome_information = tissue_small$genome_information, annotation =  tissue_small$annotation)
+
+# To visualise the results it is possible to plot the most imortant sites and generate a HTML report
+temp = tempdir()
+seqlmreport(segments[1:10], tissue_small$values, tissue_small$genome_information, tissue_small$annotation, dir = temp)
+
+# To see the results open the index.html file generated into the directory temp
 }
 }
 \author{
