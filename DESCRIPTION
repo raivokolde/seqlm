@@ -26,3 +26,4 @@ Collate:
     'seqlm-package.r'
     'segmentation.r'
     'datasets.r'
+    'visualisation.r'
