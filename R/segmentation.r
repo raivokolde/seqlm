@@ -447,6 +447,13 @@ seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 =
 		elementMetadata(res) = DataFrame(elementMetadata(res), segment_ann)
 	}
 	
+	# Add probe names 
+	names = names(genome_information)
+	elementMetadata(res) = DataFrame(elementMetadata(res), probes = apply(cbind(res$startIndex, res$endIndex), 1, function(x) paste0(names[x[1]:x[2]], collapse = ";")))
+	
+	# Remove startIndex and endIndex
+	elementMetadata(res) = elementMetadata(res)[-(2:3)] 
+	
 	return (res[order(abs(res$tstat), decreasing=TRUE)])
 }
 ##
