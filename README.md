@@ -43,10 +43,13 @@ segments = seqlm(values = tissue_small$values, genome_information = tissue_small
 ```
 
 To visualise the results it is possible to plot the most imortant sites and generate a HTML report
+
+```s
 temp = tempdir()
 seqlmreport(segments[1:10], tissue_small$values, tissue_small$genome_information, tissue_small$annotation, dir = temp)
+```
 
-[Here](???) Is an example of the resulting file.
+[Here](http://biit.cs.ut.ee/~kolde/seqlm/seqlmreport/index.html) Is an example of the resulting file.
 
 Method
 ------
