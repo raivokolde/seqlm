@@ -1,4 +1,6 @@
 export(seqlm)
+export(seqlmplots)
+export(seqlmreport)
 import(GenomicRanges)
 import(IRanges)
 import(Matrix)
