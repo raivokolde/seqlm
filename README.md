@@ -53,7 +53,7 @@ seqlmreport(segments[1:10], tissue_small$values, tissue_small$genome_information
 
 Method
 ------
-The seqlm method works in three stages. 
+The method is described in a [poster](https://raw.github.com/raivokolde/seqlm/gh-pages/pics/Poster_uus.pdf), that was presented at the Epigenetics of Common Diseases conference. Briefly, the seqlm method works in three stages. 
 
 **Stage 1:** The genome is divided into smaller pieces based on a genomic distance cutoff. 
 
@@ -68,6 +68,7 @@ The seqlm method works in three stages.
 ![Example of seqlm segmentation][schema]
 
 [schema]: https://raw.github.com/raivokolde/seqlm/gh-pages/pics/schema.png "Example of seqlm segmentation"
+
 
 
 
