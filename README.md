@@ -49,7 +49,7 @@ temp = tempdir()
 seqlmreport(segments[1:10], tissue_small$values, tissue_small$genome_information, tissue_small$annotation, dir = temp)
 ```
 
-[Here](http://biit.cs.ut.ee/~kolde/seqlm/seqlmreport/index.html) Is an example of the resulting file.
+[Here](http://biit.cs.ut.ee/~kolde/seqlm/seqlmreport/index.html) is an example of the resulting file.
 
 Method
 ------
