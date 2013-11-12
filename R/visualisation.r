@@ -18,7 +18,7 @@ fortify_seqlmplot = function(segment, values, annotation, genome_information, ex
 	df = merge(df, a)
 	
 	# Add region information
-	probe_det = data.frame(Probe = names(gi_expanded), Region = !(gi_expanded %outside% gi), Position = start(gi_expanded)) 
+	probe_det = data.frame(Probe = names(gi_expanded), Region = gi_expanded %over% gi, Position = start(gi_expanded)) 
 	df = merge(df, probe_det)
 	
 	# Calculate the box that shows region
