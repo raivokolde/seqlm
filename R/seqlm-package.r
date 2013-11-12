@@ -4,10 +4,9 @@
 #' 
 #' @docType package
 #' @import foreach
-#' @import reshape
-#' @import plyr
+#' @import reshape2
 #' @import ggplot2
-#' @import Matrix
+#' @importFrom Matrix spMatrix
 #' @import GenomicRanges
 #' @import IRanges
 #' 

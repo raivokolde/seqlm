@@ -14,8 +14,7 @@ Description: A method to identify differentially methylated segments from high
     regions to rank them based on the statistical significance.
 Imports:
     foreach,
-    reshape,
-    plyr,
+    reshape2,
     ggplot2,
     Matrix,
     GenomicRanges,
