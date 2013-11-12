@@ -382,12 +382,6 @@ additional_annotation = function(res, df){
 #' \code{elementData} of this object is used to annotate the regions 
 #' @param annotation vector describing the samples. If discrete then has to have 
 #' exactly 2 levels. 
-#' @param n0 prior number of observations to stablilize the variation estimate 
-#' when calculating likelihood
-#' @param m0 prior number of observations to estimate the cost of numeric values
-#'  when calculating description length
-#' @param sig0 prior standard deviation
-#' @param alpha multiplier for the cost of parameter in MDL. Bigger alpha values give longer regions.
 #' @param max_block_length maximal length of the block we are searching. This is 
 #' used to speed up computation
 #' @param max_dist maximal genomic distance between the sites to be considered the same region
@@ -417,7 +411,7 @@ additional_annotation = function(res, df){
 #' # To see the results open the index.html file generated into the directory temp
 #' }
 #' @export
-seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 = NA, alpha = 2, max_block_length = 50, max_dist = 1000){
+seqlm = function(values, genome_information, annotation, max_block_length = 50, max_dist = 1000){
 	# Check the input
 	if(!inherits(genome_information, "GRanges")){
 		stop("genome_information has to be a GRanges object")
@@ -449,7 +443,7 @@ seqlm = function(values, genome_information, annotation, n0 = 1, m0 = 10, sig0 =
 	# Perform segmentation
 	cat("Finding the best segmentation\n"); flush.console()
 	
-	res = seqlm_segmentation(values = values, genome_information = genome_information, max_dist = max_dist, max_block_length = max_block_length, description_length_par = list(annotation = annotation,  n0 = n0, m0 = m0, sig0 = sig0, alpha = alpha))
+	res = seqlm_segmentation(values = values, genome_information = genome_information, max_dist = max_dist, max_block_length = max_block_length, description_length_par = list(annotation = annotation,  n0 = 1, m0 = 10, sig0 = NA, alpha = 2))
 		
 	# Calculate p-values
 	cat("Calculating coefficients and p-values for all regions\n"); flush.console()
