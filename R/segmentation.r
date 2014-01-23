@@ -254,7 +254,14 @@ calculate_t = function(fit){
 	Qr = fit$qr
 	p = fit$rank
 	p1 = p
-	rss = colSums(fit$residuals * fit$residuals)
+	if(is.vector(fit$residuals)){
+		rss = sum(fit$residuals * fit$residuals)
+		est = fit$coefficients[2]
+	} 
+	else{
+		rss = colSums(fit$residuals * fit$residuals)
+		est = fit$coefficients[2, ]
+	}
 
 	n = NROW(Qr$qr)
 	rdf = n - p
@@ -263,7 +270,6 @@ calculate_t = function(fit){
 	R = chol2inv(Qr$qr[p1, p1, drop = FALSE])
 	se = sqrt(diag(R) * resvar)
 
-	est = fit$coefficients[2, ]
 	tval = est/se
 
 	res = cbind(coef = est, se = se, tstat = tval, p.value = ifelse(is.na(tval), 1, 2 * pt(abs(tval), df=rdf, lower.tail=FALSE)))
