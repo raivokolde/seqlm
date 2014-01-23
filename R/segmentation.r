@@ -163,9 +163,16 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 	pieces = pieces[ord]
 	lengths = lengths[ord]
 	
-	# Divide the pieces in two
-	which_pieces1 = which(lengths == 1)
-	which_pieces2 = which(lengths >= 2)
+	if(max_block_length > 1){
+		# Divide the pieces in two
+		which_pieces1 = which(lengths == 1)
+		which_pieces2 = which(lengths >= 2)
+	}
+	else{
+		# If max_block_length <= 1 then there is no need to find the segmentation
+		which_pieces1 = seq_along(pieces)
+		which_pieces2 = c()
+	}
 	
 	# Find cumulative progress for progressbar
 	cumprogress = cumsum(number_of_segmentations(lengths[which_pieces2], max_block_length))
