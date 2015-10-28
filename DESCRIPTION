@@ -18,7 +18,8 @@ Imports:
     ggplot2,
     Matrix,
     GenomicRanges,
-    IRanges
+    IRanges,
+    S4Vectors
 License: GPL-2
 LazyLoad: yes
 Collate:

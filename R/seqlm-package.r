@@ -9,6 +9,7 @@
 #' @importFrom Matrix spMatrix
 #' @import GenomicRanges
 #' @import IRanges
+#' @import S4Vectors
 #' 
 #' @aliases seqlm-package
 NULL
