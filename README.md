@@ -9,7 +9,7 @@ The most convenient way to install the package is by using the `devtools` packag
 
 ```s
 library(devtools)
-install_github("seqlm", "raivokolde")
+install_github("raivokolde/seqlm")
 ```
 To start using the package just load it as any other package.
 
