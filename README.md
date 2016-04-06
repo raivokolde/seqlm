@@ -22,8 +22,20 @@ Usage
 For running the algorithm one has to have three objects:
 
 * a matrix with methylation values;
-* a vector specifying the classes of columns (only two-class case is supported currently);
+* a vector specifying the classes of columns (only two-class case is supported currently) or a continuous variable;
 * location information about the methylation probes in GRanges format (a file for Illumina 450K platform can be downloaded from [here](http://biit.cs.ut.ee/~kolde/seqlm/genome_information.RData)). 
+
+All the work is done by one command `seqlm` that takes as input all the objects described above and also parameters:
+
+* `max_block_length` - that determines the maximal number of CpG sites in a region and is used to speed up the computations (default 50)
+* `max_dist` - that determines the maximal allowed genomic distance between two consecutive probes in a region (default 1000bp)
+
+For more information use `?seqlm` in R.
+
+Optionally one can visualise the results using `seqlmreport` command that visualises the identified regions and creates a html page to show them. The main input for this function is the result of `seqlm` and the three objects described above. 
+
+Example
+-------
 
 An example dataset `tissue_small` is included in the package. It contains data comparing adipose tissue and brainstem, from chromosomes 17 and 18. Finding regions in this data can be accomplished using commands:
 
