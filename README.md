@@ -32,7 +32,7 @@ All the work is done by one command `seqlm` that takes as input all the objects 
 
 For more information use `?seqlm` in R.
 
-Optionally one can visualise the results using `seqlmreport` command that visualises the identified regions and creates a html page to show them. The main input for this function is the result of `seqlm` and the three objects described above. 
+Optionally one can visualise the results using `seqlmreport` command that visualises the identified regions and creates a html page to show them. The main input for this function is the result of `seqlm` and the three objects described above. There are additional options to control the appearance of the plots, see `?seqlmreport` for details. 
 
 Example
 -------
