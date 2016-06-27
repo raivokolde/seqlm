@@ -8,7 +8,7 @@ fortify_seqlmplot = function(segment, values, annotation, genome_information, ex
 	gi = subsetByOverlaps(genome_information, segment)
 	gi_expanded = subsetByOverlaps(genome_information, segment_expanded)
 	
-	values0 = as.matrix(values[names(gi_expanded), ])
+	values0 = as.matrix(values[names(gi_expanded), , drop = F])
 	
 	# Bring into long format
 	df = melt(values0, varnames = c("Probe", "Sample"))
