@@ -152,7 +152,7 @@ seqlm_segmentation = function(values, genome_information, max_dist, max_block_le
 	values = t(scale(t(values), center=TRUE, scale=FALSE))
 	
 	# Divide the genome into initial segments based on genomic coordinate
-	chr = IRanges::as.vector(seqnames(genome_information))
+	chr = as.vector(seqnames(genome_information))
 	pos = start(genome_information)
 	indicator = group_by_dist(pos, max_dist)
 	pieces = split(seq_along(indicator), indicator)
@@ -319,7 +319,7 @@ match_positions = function(values, genome_information){
 	values = values[int, ]
 	
 	# Order by genomic coordinates
-	genome_information = genome_information[order(IRanges::as.vector(seqnames(genome_information)), start(genome_information)), ]
+	genome_information = genome_information[order(as.vector(seqnames(genome_information)), start(genome_information)), ]
 	values = values[names(genome_information), ]
 	
 	return(list(values = values, genome_information = genome_information))
