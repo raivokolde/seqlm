@@ -3,6 +3,10 @@ seqlm
 
 An R package for identification of differentially methylated regions (DMRs) from high density chip, for example Illumina 450K, data. 
 
+Citation
+--------
+R Kolde\*, K Märtens\*, K Lokk, S Laur, J Vilo 2016. “Seqlm: an MDL Based Method for Identifying Differentially Methylated Regions in High Density Methylation Array Data.” Bioinformatics (Oxford, England): btw304.
+
 Installation
 ------------
 The most convenient way to install the package is by using the `devtools` package.
