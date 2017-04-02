@@ -50,7 +50,20 @@ fortify_seqlmplot = function(segment, values, annotation, genome_information, ex
 }
 
 draw_seqlmplot = function(df, box, ylim, expand){
-	plot = qplot(x = Position, y = value, geom = c("line", "point"), colour = Annotation, group = Sample, data = df) + geom_rect(aes(xmin = box$start, xmax = box$end, ymin = -Inf, ymax = Inf), colour = "grey20", fill = "grey95") + geom_point() + geom_line() +  geom_jitter(position = position_jitter(width = .1)) + scale_y_continuous(limits = ylim) + scale_x_continuous(limits = c(box$start - expand, box$end + expand)) + theme_bw() 
+	if(length(unique(df$Position)) == 1){
+	  plot = ggplot(aes(x = Position, y = value, colour = Annotation, group = Sample), data = df) + 
+	    geom_rect(aes(xmin = box$start, xmax = box$end, ymin = -Inf, ymax = Inf), colour = "grey20", fill = "grey95") + 
+	    geom_point()
+	} else{
+	  plot = ggplot(aes(x = Position, y = value, colour = Annotation, group = Sample), data = df) + 
+	    geom_rect(aes(xmin = box$start, xmax = box$end, ymin = -Inf, ymax = Inf), colour = "grey20", fill = "grey95") + 
+	    geom_point() + geom_line()
+	}
+  plot + 
+    geom_jitter(position = position_jitter(width = .1)) + 
+    scale_y_continuous(limits = ylim) + 
+    scale_x_continuous(limits = c(box$start - expand, box$end + expand)) + 
+    theme_bw()
 }
 	
 seqlmplot = function(segment, values, annotation, genome_information, expand, ylim = extendrange(values), filename = NA, ...){
