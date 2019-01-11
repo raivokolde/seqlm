@@ -27,7 +27,7 @@ For running the algorithm one has to have three objects:
 
 * a matrix with methylation values;
 * a vector specifying the classes of columns (only two-class case is supported currently) or a continuous variable;
-* location information about the methylation probes in GRanges format (a file for Illumina 450K platform can be downloaded from [here](http://biit.cs.ut.ee/~kolde/seqlm/genome_information.RData)). 
+* location information about the methylation probes in GRanges format (a file for Illumina 450K platform can be downloaded from [here](https://github.com/raivokolde/seqlm/raw/gh-pages/genome_information.RData)). 
 
 All the work is done by one command `seqlm` that takes as input all the objects described above and also parameters:
 
